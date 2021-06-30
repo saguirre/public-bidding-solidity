@@ -1,0 +1,30 @@
+{
+  "name": "bidding-blockchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saguirrews/bidding-blockchain-obli.git"
+  },
+  "author": "Aguirre Mazas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/saguirrews/bidding-blockchain-obli/issues"
+  },
+  "homepage": "https://github.com/saguirrews/bidding-blockchain-obli#readme",
+  "devDependencies": {
+    "dotenv": "^10.0.0"
+  },
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.4.1",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "solc": "^0.8.6",
+    "web3": "^1.3.6"
+  }
+}
