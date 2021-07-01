@@ -39,4 +39,42 @@ router.get('/register', async function (req, res) {
     }
 });
 
+router.post('/register', async (req, res) => {
+    try {
+        const contract = civilRegistryService.getContract();
+        console.log(req.body);
+        const ci = req.body.ci;
+        const name = req.body.name;
+        const lastName = req.body.lastName;
+        const birthDate = req.body.birthDate;
+        await contract.methods.registerCitizen(ci, name, lastName, birthDate).call();
+        res.status(201).send('Citizen registered');
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(new Error(error));
+    }
+});
+
+router.put('/change-owner/:owner', async (req, res) => {
+    try {
+        const contract = civilRegistryService.getContract();
+        await contract.methods.changeOwner(req.params.owner)
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send(new Error(error));
+    }
+
+});
+router.get('/approved-users', async (req, res) => {
+    try {
+        const contract = civilRegistryService.getContract();
+        await contract.methods.getApprovedUsers().call();
+        res.status(201).send('Citizen registered');
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(new Error(error));
+    }
+});
+
 module.exports = router

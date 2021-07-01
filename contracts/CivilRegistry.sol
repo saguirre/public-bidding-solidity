@@ -15,10 +15,12 @@ contract CivilRegistry {
     mapping(address => Citizen) registeredCitizens;
     Citizen[] approvedCitizens;
     uint256 creationDate = block.timestamp;
-    address owner;
+    address private owner;
+    address private ownerContract;
 
     constructor() public {
         owner = msg.sender;
+        ownerContract = msg.sender;
     }
 
     function registerCitizen(
@@ -39,17 +41,27 @@ contract CivilRegistry {
         registeredCitizens[msg.sender] = newCitizen;
     }
 
+    modifier isOwner() {
+        require(
+            msg.sender == owner,
+            "Solo el owner puede realizar esta operacion"
+        );
+        _;
+    }
+
+    function changeOwner(address newOwner) public isOwner {
+        owner = newOwner;
+    }
+
+    function changeOwnerContract(address newOwner) public isOwner {
+        ownerContract = newOwner;
+    }
+
     function getApprovedCitizens() public view returns (Citizen[] memory) {
         return approvedCitizens;
     }
 
-    modifier onlyBy(address _account) {
-        require(msg.sender == _account, "Unauthorized");
-
-        _;
-    }
-
-    function approveCitizen(address citizen) public onlyBy(address(owner)) {
+    function approveCitizen(address citizen) public isOwner {
         registeredCitizens[citizen].approved = true;
         approvedCitizens.push(registeredCitizens[citizen]);
     }

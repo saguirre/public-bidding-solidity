@@ -5,7 +5,7 @@ import "./CivilRegistry.sol";
 import "./TaxEntity.sol";
 
 contract RegulatoryEntity {
-    address public owner = msg.sender;
+    address private owner;
     TaxEntity public taxEntity;
     address public biddingContract;
     CivilRegistry public civilRegistryContract;
@@ -14,8 +14,18 @@ contract RegulatoryEntity {
     uint256 public creationTime = block.timestamp;
 
     constructor() public {
-        civilRegistryContract = new CivilRegistry();
-        taxEntity = new TaxEntity();
+        owner = msg.sender;
+    }
+
+    function setCivilRegistry(address civilRegistryAddress)
+        public
+        onlyBy(owner)
+    {
+        civilRegistryContract = CivilRegistry(civilRegistryAddress);
+    }
+
+    function setTaxEntity(address taxEntityAddress) public onlyBy(owner) {
+        taxEntity = TaxEntity(taxEntityAddress);
     }
 
     modifier onlyBy(address _account) {
@@ -36,10 +46,7 @@ contract RegulatoryEntity {
         authorizedUsers[user] = true;
     }
 
-    function approveRegisteredCitizen(address citizen)
-        public
-        isAuthorized
-    {
+    function approveRegisteredCitizen(address citizen) public isAuthorized {
         civilRegistryContract.approveCitizen(citizen);
         taxEntity.addApprovedCitizen(citizen);
     }

@@ -19,7 +19,8 @@ const taxEntityRoute = require('./routes/tax_entity.route');
 const ganacheProvider = new Web3.providers.HttpProvider('http://127.0.0.1:7545');
 web3 = new Web3(ganacheProvider);
 // web3 = new Web3(infuraProvider);
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.get('/', function(req,res){ res.send('Welcome to your first wallet')});
 
 app.use('/api/regulatory-entity', regulatoryEntityRoute);

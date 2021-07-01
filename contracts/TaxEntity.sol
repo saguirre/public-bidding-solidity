@@ -16,21 +16,44 @@ contract TaxEntity {
     mapping(address => Tax) lastTaxPayed;
     mapping(address => mapping(string => uint256)) citizenDebt;
     address private owner;
+    address private ownerContract;
     address[] approvedCitizens;
 
     constructor() public {
         owner = msg.sender;
+        ownerContract = msg.sender;
     }
 
     modifier isOwner() {
         require(
             msg.sender == owner,
+            "Solo el owner de este contrato puede realizar esta operacion."
+        );
+        _;
+    }
+
+    function changeOwnerContract(address newOwner) public isOwner {
+        ownerContract = newOwner;
+    }
+
+    function changeOwner(address newOwner) public isOwner {
+        owner = newOwner;
+    }
+
+    modifier isOwnerContract() {
+        require(
+            msg.sender == ownerContract,
             "Solo el Estado puede realizar esta operacion."
         );
         _;
     }
 
-    function getCurrentTaxes() public view isOwner returns (Tax[] memory) {
+    function getCurrentTaxes()
+        public
+        view
+        isOwnerContract
+        returns (Tax[] memory)
+    {
         return taxList;
     }
 
@@ -40,7 +63,7 @@ contract TaxEntity {
         uint256 amount,
         uint256 monthlyExpiration,
         uint256 monthlyInterest
-    ) public isOwner {
+    ) public isOwnerContract {
         Tax memory tax = Tax({
             name: name,
             lineOfWork: lineOfWork,
@@ -54,12 +77,12 @@ contract TaxEntity {
         addTaxToApprovedCitizens(tax);
     }
 
-    function addApprovedCitizen(address citizen) public isOwner {
+    function addApprovedCitizen(address citizen) public isOwnerContract {
         approvedCitizens.push(citizen);
     }
 
     function addTaxToApprovedCitizens(Tax memory tax) private {
-        for (uint i = 0; i < approvedCitizens.length; i++) {
+        for (uint256 i = 0; i < approvedCitizens.length; i++) {
             citizenDebt[approvedCitizens[i]][tax.name] = tax.amount;
         }
     }
