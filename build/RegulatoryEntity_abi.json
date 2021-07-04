@@ -102,16 +102,29 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "civilRegistryAddress",
         "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "setCivilRegistry",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "taxEntityAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setTaxEntity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -1,19 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
-contract TaxEntity {
-    struct Tax {
-        string name;
-        string lineOfWork;
-        uint256 amount;
-        uint256 monthlyExpiration;
-        uint256 monthlyInterest;
-        bool active;
-    }
+import "./SharedStructsLibrary.sol";
 
-    mapping(string => Tax) taxes;
-    Tax[] taxList;
-    mapping(address => Tax) lastTaxPayed;
+contract TaxEntity {
+    mapping(string => SharedStructs.Tax) taxes;
+    SharedStructs.Tax[] taxList;
+    mapping(address => SharedStructs.Tax) lastTaxPayed;
     mapping(address => mapping(string => uint256)) citizenDebt;
     address private owner;
     address private ownerContract;
@@ -52,9 +45,13 @@ contract TaxEntity {
         public
         view
         isOwnerContract
-        returns (Tax[] memory)
+        returns (SharedStructs.Tax[] memory)
     {
         return taxList;
+    }
+
+    function getCitizenDebt(address citizen) public view returns (uint) {
+        return citizenDebt[citizen][""];
     }
 
     function addTax(
@@ -64,7 +61,7 @@ contract TaxEntity {
         uint256 monthlyExpiration,
         uint256 monthlyInterest
     ) public isOwnerContract {
-        Tax memory tax = Tax({
+        SharedStructs.Tax memory tax = SharedStructs.Tax({
             name: name,
             lineOfWork: lineOfWork,
             amount: amount,
@@ -81,7 +78,7 @@ contract TaxEntity {
         approvedCitizens.push(citizen);
     }
 
-    function addTaxToApprovedCitizens(Tax memory tax) private {
+    function addTaxToApprovedCitizens(SharedStructs.Tax memory tax) private {
         for (uint256 i = 0; i < approvedCitizens.length; i++) {
             citizenDebt[approvedCitizens[i]][tax.name] = tax.amount;
         }
@@ -102,7 +99,7 @@ contract TaxEntity {
 
     // Sender can only pay its own tax.
     // If sender sent too much money, he is refunded.
-    // If sender sent too little, he is allowed to pay what he sent.
+    // If sender sent too little, he is not allowed to pay what he sent.
     // When tax is payed, the last tax payed for the sender is marked as it
     function payTax(string memory tax) public payable costs(tax) {
         citizenDebt[msg.sender][tax] = 0;

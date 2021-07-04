@@ -24,15 +24,27 @@ router.get('/deploy', function (req, res) {
     }
 });
 
-router.get('/getBalance', async function (req, res) {
+router.put('/set-civil-registry/:address', async (req, res) => {
     try {
         const contract = regulatoryEntityService.getContract();
-        let result = await contract.methods.getBalance().call();
-        res.status(200).send('Balance:' + web3.utils.fromWei(result, 'ether') + ' ethers');
+        await contract.methods.setCivilRegistry(req.params.address).call({ from: '0x5FBDe0e4Fd96f036b217cAB59CEDC152e05fFc83' });
+        res.status(200).send('Civil registry set');
     } catch (error) {
         console.log(error);
         res.status(500).send(new Error(error));
     }
 });
+
+router.put('/citizen/approve/:address', async (req, res) => {
+    try {
+        const contract = regulatoryEntityService.getContract();
+        await contract.methods.approveRegisteredCitizen(req.params.address).call();
+        res.status(200).send(`Citizen ${req.params.address} approved`);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(new Error(error));
+    }
+});
+
 
 module.exports = router

@@ -1,19 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-contract CivilRegistry {
-    struct Citizen {
-        string ci;
-        string name;
-        string lastName;
-        uint256 birthDate;
-        address citizenAddress;
-        bool voted;
-        bool approved;
-    }
+import "./SharedStructsLibrary.sol";
 
-    mapping(address => Citizen) registeredCitizens;
-    Citizen[] approvedCitizens;
+contract CivilRegistry {
+    mapping(address => SharedStructs.Citizen) registeredCitizens;
+    SharedStructs.Citizen[] approvedCitizens;
     uint256 creationDate = block.timestamp;
     address private owner;
     address private ownerContract;
@@ -29,16 +21,15 @@ contract CivilRegistry {
         string memory lastName,
         uint256 birthDate
     ) public {
-        Citizen memory newCitizen = Citizen({
+        registeredCitizens[msg.sender] = SharedStructs.Citizen({
             ci: ci,
             name: name,
             lastName: lastName,
             birthDate: birthDate,
-            voted: false,
             citizenAddress: msg.sender,
-            approved: false
+            approved: false,
+            voted: false
         });
-        registeredCitizens[msg.sender] = newCitizen;
     }
 
     modifier isOwner() {
@@ -57,8 +48,29 @@ contract CivilRegistry {
         ownerContract = newOwner;
     }
 
-    function getApprovedCitizens() public view returns (Citizen[] memory) {
+    function getApprovedCitizens()
+        public
+        view
+        returns (SharedStructs.Citizen[] memory)
+    {
         return approvedCitizens;
+    }
+
+    function checkIfCitizenIsApproved(address citizen)
+        public
+        view
+        returns (bool)
+    {
+        return registeredCitizens[citizen].approved;
+    }
+
+    function citizenHasVoted(address citizen) public view returns (bool) {
+        return registeredCitizens[citizen].voted;
+    }
+
+    function approveCitizenVote(address citizen) public isOwner {
+        require(registeredCitizens[citizen].approved, "El ciudadano no esta aprobado para votar");
+        registeredCitizens[citizen].voted = true;
     }
 
     function approveCitizen(address citizen) public isOwner {

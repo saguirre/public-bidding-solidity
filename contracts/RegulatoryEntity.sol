@@ -3,14 +3,15 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "./CivilRegistry.sol";
 import "./TaxEntity.sol";
+import "./BiddingEntity.sol";
 
 contract RegulatoryEntity {
     address private owner;
-    TaxEntity public taxEntity;
-    address public biddingContract;
-    CivilRegistry public civilRegistryContract;
-    mapping(address => bool) public authorizedUsers;
-    uint256 public voteBudgetValue;
+    TaxEntity private taxEntityContract;
+    CivilRegistry private civilRegistryContract;
+    BiddingEntity private biddingEntityContract;
+    mapping(address => bool) private authorizedUsers;
+    uint256 public voteBudgetValue = 1 ether;
     uint256 public creationTime = block.timestamp;
 
     constructor() public {
@@ -25,7 +26,11 @@ contract RegulatoryEntity {
     }
 
     function setTaxEntity(address taxEntityAddress) public onlyBy(owner) {
-        taxEntity = TaxEntity(taxEntityAddress);
+        taxEntityContract = TaxEntity(taxEntityAddress);
+    }
+
+    function setBiddingEntity(address biddingEntityAddress) public onlyBy(owner) {
+        biddingEntityContract = BiddingEntity(biddingEntityAddress);
     }
 
     modifier onlyBy(address _account) {
@@ -42,12 +47,20 @@ contract RegulatoryEntity {
         _;
     }
 
+    modifier isBiddingEntity() {
+        require(msg.sender == address(biddingEntityContract), "Esta accion no puede ser realizada por esta direccion");
+        _;
+    }
+
+    function approveCitizenVote(address citizen) public isBiddingEntity {
+        civilRegistryContract.approveCitizenVote(citizen);
+    }
+
     function addAuthorizedUser(address user) public onlyBy(owner) {
         authorizedUsers[user] = true;
     }
 
     function approveRegisteredCitizen(address citizen) public isAuthorized {
         civilRegistryContract.approveCitizen(citizen);
-        taxEntity.addApprovedCitizen(citizen);
     }
 }
