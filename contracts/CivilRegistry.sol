@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./SharedStructsLibrary.sol";
+import "./Citizen.sol";
 
 contract CivilRegistry {
-    mapping(address => SharedStructs.Citizen) registeredCitizens;
-    SharedStructs.Citizen[] approvedCitizens;
+    mapping(address => Citizen) registeredCitizens;
+    Citizen[] approvedCitizens;
     uint256 creationDate = block.timestamp;
     address private owner;
     address private ownerContract;
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
         ownerContract = msg.sender;
     }
@@ -21,15 +21,13 @@ contract CivilRegistry {
         string memory lastName,
         uint256 birthDate
     ) public {
-        registeredCitizens[msg.sender] = SharedStructs.Citizen({
-            ci: ci,
-            name: name,
-            lastName: lastName,
-            birthDate: birthDate,
-            citizenAddress: msg.sender,
-            approved: false,
-            voted: false
-        });
+        registeredCitizens[msg.sender] = new Citizen(
+            ci,
+            name,
+            lastName,
+            birthDate,
+            address(this)
+        );
     }
 
     modifier isOwner() {
@@ -48,11 +46,7 @@ contract CivilRegistry {
         ownerContract = newOwner;
     }
 
-    function getApprovedCitizens()
-        public
-        view
-        returns (SharedStructs.Citizen[] memory)
-    {
+    function getApprovedCitizens() public view returns (Citizen[] memory) {
         return approvedCitizens;
     }
 
@@ -61,20 +55,38 @@ contract CivilRegistry {
         view
         returns (bool)
     {
-        return registeredCitizens[citizen].approved;
+        return registeredCitizens[citizen].approved();
     }
 
     function citizenHasVoted(address citizen) public view returns (bool) {
-        return registeredCitizens[citizen].voted;
+        return registeredCitizens[citizen].voted();
+    }
+
+    function getVotingPercentage() public view returns (uint) {
+        return (approvedCitizens.length * getCitizenAmountThatHasVoted()) / 100;
+    }
+
+    function getCitizenAmountThatHasVoted() public view returns (uint) {
+        uint256 votedAmount = 0;
+        for (uint i = 0; i < approvedCitizens.length; i++) {
+            if (approvedCitizens[i].voted()) {
+                votedAmount += 1;
+            }
+        }
+
+        return votedAmount;
     }
 
     function approveCitizenVote(address citizen) public isOwner {
-        require(registeredCitizens[citizen].approved, "El ciudadano no esta aprobado para votar");
-        registeredCitizens[citizen].voted = true;
+        require(
+            registeredCitizens[citizen].approved(),
+            "El ciudadano no esta aprobado para votar"
+        );
+        registeredCitizens[citizen].setVoted(true);
     }
 
     function approveCitizen(address citizen) public isOwner {
-        registeredCitizens[citizen].approved = true;
+        registeredCitizens[citizen].setApproval(true);
         approvedCitizens.push(registeredCitizens[citizen]);
     }
 }

@@ -1,18 +1,32 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./SharedStructsLibrary.sol";
+import "./Tax.sol";
+import "./Citizen.sol";
 
 contract TaxEntity {
-    mapping(string => SharedStructs.Tax) taxes;
-    SharedStructs.Tax[] taxList;
-    mapping(address => SharedStructs.Tax) lastTaxPayed;
-    mapping(address => mapping(string => uint256)) citizenDebt;
+    struct ConstructionBudget {
+        address construction;
+        uint256 amount;
+    }
+
+    // Tax address => Tax. All registered taxes
+    mapping(address => Tax) taxes;
+    // List of taxes
+    Tax[] taxList;
+    // Address citizen => Last Tax payed
+    mapping(address => Tax) lastTaxPayed;
+    // Citizen address => Tax address => Citizen debt for tax
+    mapping(address => mapping(address => uint256)) citizenDebt;
+    mapping(address => Tax[]) citizenTaxes;
+    // Citizen address => Citizen total debt;
+    mapping(address => uint256) totalCitizenDebt;
     address private owner;
     address private ownerContract;
+    Queue constructionQueue;
     address[] approvedCitizens;
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
         ownerContract = msg.sender;
     }
@@ -45,13 +59,25 @@ contract TaxEntity {
         public
         view
         isOwnerContract
-        returns (SharedStructs.Tax[] memory)
+        returns (Tax[] memory)
     {
         return taxList;
     }
 
-    function getCitizenDebt(address citizen) public view returns (uint) {
-        return citizenDebt[citizen][""];
+    function getCitizenDebtForTax(address citizenAddress, address taxAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return citizenDebt[citizenAddress][taxAddress];
+    }
+
+    function getTotalCitizenDebt(address citizen)
+        public
+        view
+        returns (uint256)
+    {
+        return totalCitizenDebt[citizen];
     }
 
     function addTax(
@@ -61,52 +87,125 @@ contract TaxEntity {
         uint256 monthlyExpiration,
         uint256 monthlyInterest
     ) public isOwnerContract {
-        SharedStructs.Tax memory tax = SharedStructs.Tax({
-            name: name,
-            lineOfWork: lineOfWork,
-            amount: amount,
-            monthlyExpiration: monthlyExpiration,
-            monthlyInterest: monthlyInterest,
-            active: true
-        });
+        Tax tax = new Tax(
+            name,
+            lineOfWork,
+            amount,
+            monthlyExpiration,
+            monthlyInterest,
+            address(this)
+        );
         taxList.push(tax);
-        taxes[name];
+        taxes[address(tax)];
         addTaxToApprovedCitizens(tax);
     }
 
+    // Agrego un ciudadano a mi lista de addresses.
+    // Agrego a la deuda de ese ciudadano cada cantidad de cada tax que existen.
     function addApprovedCitizen(address citizen) public isOwnerContract {
         approvedCitizens.push(citizen);
-    }
-
-    function addTaxToApprovedCitizens(SharedStructs.Tax memory tax) private {
-        for (uint256 i = 0; i < approvedCitizens.length; i++) {
-            citizenDebt[approvedCitizens[i]][tax.name] = tax.amount;
+        for(uint i = 0; i < taxList.length; i++) {
+            citizenDebt[citizen][address(taxList[i])] = taxList[i].amount();
         }
     }
 
-    modifier costs(string memory tax) {
+    function addTaxToApprovedCitizens(Tax tax) private {
+        for (uint256 i = 0; i < approvedCitizens.length; i++) {
+            citizenDebt[approvedCitizens[i]][address(tax)] = tax
+            .amount();
+        }
+    }
+
+    function fundConstruction(uint256 amount, address construction)
+        public
+        isOwnerContract
+    {
+        if (amount > address(this).balance) {
+            constructionQueue.enqueue(construction, amount);
+        } else {
+            payable(construction).transfer(amount);
+        }
+    }
+
+    modifier costs(Tax tax) {
         require(
-            msg.value >= citizenDebt[msg.sender][tax],
+            msg.value >= citizenDebt[msg.sender][address(tax)],
             "No ha enviado suficiente Ether para pagar el impuesto."
         );
 
         _;
-        if (msg.value > taxes[tax].amount)
+        handleConstructionQueueFunding();
+        if (msg.value > taxes[address(tax)].amount())
             payable(msg.sender).transfer(
-                msg.value - citizenDebt[msg.sender][tax]
+                msg.value - citizenDebt[msg.sender][address(tax)]
             );
+    }
+
+    function handleConstructionQueueFunding() private {
+        if (!constructionQueue.isEmpty()) {
+
+                Queue.ConstructionBudget memory constructionToFund
+             = constructionQueue.viewFirst();
+            if (address(this).balance >= constructionToFund.amount) {
+                payable(constructionToFund.construction).transfer(
+                    constructionToFund.amount
+                );
+                constructionQueue.dequeue();
+            }
+        }
     }
 
     // Sender can only pay its own tax.
     // If sender sent too much money, he is refunded.
     // If sender sent too little, he is not allowed to pay what he sent.
     // When tax is payed, the last tax payed for the sender is marked as it
-    function payTax(string memory tax) public payable costs(tax) {
-        citizenDebt[msg.sender][tax] = 0;
-        lastTaxPayed[msg.sender] = taxes[tax];
+    function payTax(Tax tax) public payable costs(tax) {
+        citizenDebt[msg.sender][address(tax)] = 0;
+        lastTaxPayed[msg.sender] = taxes[address(tax)];
     }
 
-    function howMuch(string memory tax) public view returns (uint256) {
-        return citizenDebt[msg.sender][tax];
+    function howMuch(address taxAddress) public view returns (uint256) {
+        return citizenDebt[msg.sender][taxAddress];
+    }
+}
+
+contract Queue {
+    struct ConstructionBudget {
+        address construction;
+        uint256 amount;
+    }
+
+    mapping(uint256 => ConstructionBudget) queue;
+    uint256 first = 1;
+    uint256 last = 0;
+
+    function isEmpty() public view returns (bool) {
+        return last < first;
+    }
+
+    function enqueue(address construction, uint256 amount) public {
+        last += 1;
+        queue[last] = ConstructionBudget({
+            construction: construction,
+            amount: amount
+        });
+    }
+
+    function viewFirst()
+        public
+        view
+        returns (ConstructionBudget memory construction)
+    {
+        require(last >= first);
+        return queue[first];
+    }
+
+    function dequeue() public returns (ConstructionBudget memory construction) {
+        require(last >= first); // non-empty queue
+
+        construction = queue[first];
+
+        delete queue[first];
+        first += 1;
     }
 }

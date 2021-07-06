@@ -5,8 +5,9 @@ pragma solidity >=0.7.0 <0.9.0;
 import "./TaxEntity.sol";
 import "./RegulatoryEntity.sol";
 import "./CivilRegistry.sol";
-import "./SharedStructsLibrary.sol";
 import "./Construction.sol";
+import "./Proposal.sol";
+import "./constructionFactory.sol";
 
 contract BiddingEntity {
     enum Period {
@@ -27,19 +28,24 @@ contract BiddingEntity {
     TaxEntity taxEntity;
     RegulatoryEntity regulatoryEntity;
     CivilRegistry civilRegistry;
-    mapping(address => SharedStructs.Citizen) public voters;
+    ConstructionFactory constructionFactory;
+    address owner;
+    mapping(address => Citizen) public voters;
 
-    SharedStructs.Proposal[] public proposals;
-    SharedStructs.Proposal[] private approvedProposals;
+    Proposal[] public proposalList;
+    mapping(address => Proposal) public proposals;
+    Proposal[] private approvedProposals;
 
     constructor(
         address regulatoryEntityAddress,
         address civilRegistryAddress,
-        address taxEntityAddress
+        address taxEntityAddress,
+        address constructionFactoryAddress
     ) {
         regulatoryEntity = RegulatoryEntity(regulatoryEntityAddress);
         taxEntity = TaxEntity(taxEntityAddress);
         civilRegistry = CivilRegistry(civilRegistryAddress);
+        constructionFactory = ConstructionFactory(constructionFactoryAddress);
         period = Period.AcceptingProposals;
     }
 
@@ -61,7 +67,7 @@ contract BiddingEntity {
 
     modifier hasNoDebt() {
         require(
-            taxEntity.getCitizenDebt(msg.sender) == 0,
+            taxEntity.getTotalCitizenDebt(msg.sender) == 0,
             "Usuario no tiene todos sus impuestos pagos"
         );
         _;
@@ -75,7 +81,15 @@ contract BiddingEntity {
         _;
     }
 
-    function nextPeriod() internal {
+    modifier isOwner {
+        require(
+            msg.sender == address(regulatoryEntity),
+            "Esta funcion solo puede ser llamada por el dueno del contrato"
+        );
+        _;
+    }
+
+    function nextPeriod() public isOwner {
         if (period == Period.AcceptingProposals) {
             require(
                 proposalCount >= 3,
@@ -91,7 +105,7 @@ contract BiddingEntity {
         }
 
         if (period == Period.ProposalVoting) {
-            require(votePercentage >= 80, "No ha votado suficiente gente");
+            require(civilRegistry.getVotingPercentage() >= 80, "No ha votado suficiente gente");
             require(
                 block.timestamp >= votingPeriodStart + 15 days,
                 "No han pasado los dias suficientes"
@@ -102,78 +116,72 @@ contract BiddingEntity {
         period = Period(uint256(period) + 1);
     }
 
+    function restartCycle() public onlyAt(Period.Closed) {
+        period = Period.AcceptingProposals;
+    }
+
     function closeOutVotingPeriod() private onlyAt(Period.ProposalVoting) {
         uint256 budgetVoteValue = regulatoryEntity.voteBudgetValue();
 
-        for (uint256 i = 0; i < proposals.length; i++) {
-            uint256 coveredBudget = proposals[i].voteCount * budgetVoteValue;
-            if (coveredBudget == proposals[i].budget) {
-                approvedProposals.push(proposals[i]);
-                // Create Obra
+        for (uint256 i = 0; i < proposalList.length; i++) {
+            uint256 coveredBudget = proposalList[i].voteCount() *
+                budgetVoteValue;
+            if (coveredBudget == proposalList[i].budget()) {
+                approvedProposals.push(proposalList[i]);
+                // Create Construction
+                address newConstruction = constructionFactory
+                .createConstruction(proposalList[i]);
+                regulatoryEntity.fundConstruction(
+                    proposalList[i].budget(),
+                    newConstruction
+                );
             }
         }
         // De esta forma se descartan las propuestas no aprobadas
-        proposals = approvedProposals;
+        proposalList = approvedProposals;
+    }
+
+    function assignBudgetToProposal(address proposalAddress, uint256 budget) public isOwner {
+        Proposal proposal = proposals[proposalAddress];
+        proposal.setBudget(budget);
+        for (uint256 i = 0; i < proposalList.length; i++) {
+            if (address(proposalList[i]) == proposalAddress) {
+                proposalList[i].setBudget(budget);
+            }
+        }
+    }
+
+    function getConstruction(address constructionAddress)
+        public
+        view
+        isOwner
+        returns (Construction construction)
+    {
+        return constructionFactory.getConstruction(constructionAddress);
     }
 
     function receiveProposal(
         string memory name,
         string memory lineOfWork,
-        string memory description,
-        uint256 voteCount
+        string memory description
     ) public userApproved hasNoDebt onlyAt(Period.AcceptingProposals) {
-        proposals.push(
-            SharedStructs.Proposal({
-                name: name,
-                lineOfWork: lineOfWork,
-                description: description,
-                budget: 0,
-                voteCount: 0
-            })
+        Proposal proposal = new Proposal(
+            name,
+            lineOfWork,
+            description,
+            address(this)
         );
+        proposalList.push(proposal);
+        proposals[address(proposal)] = proposal;
     }
 
-    function vote(uint256 proposal)
+    function vote(address proposal)
         public
         userApproved
-        hasNoDebt
         hasNotVoted
         onlyAt(Period.ProposalVoting)
     {
         regulatoryEntity.approveCitizenVote(msg.sender);
-        proposals[proposal].voteCount += 1;
-    }
-
-    Construction[] public constructions;
-    uint256 disabledCount;
-
-    event ChildCreated(address childAddress, uint256 data);
-
-    function createChild(uint256 data) external {
-        Construction child = new Construction(data, constructions.length);
-        constructions.push(child);
-        emit ChildCreated(address(child), data);
-    }
-
-    function getChildren()
-        external
-        view
-        returns (Construction[] memory _constructions)
-    {
-        _constructions = new Construction[](
-            constructions.length - disabledCount
-        );
-        uint256 count;
-        for (uint256 i = 0; i < constructions.length; i++) {
-            if (constructions[i].isEnabled()) {
-                _constructions[count] = constructions[i];
-                count++;
-            }
-        }
-    }
-
-    function disable(Construction child) external {
-        constructions[child.index()].disable();
-        disabledCount++;
+        proposals[proposal].vote();
     }
 }

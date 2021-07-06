@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 import "./CivilRegistry.sol";
 import "./TaxEntity.sol";
 import "./BiddingEntity.sol";
+import "./Construction.sol";
 
 contract RegulatoryEntity {
     address private owner;
@@ -29,7 +30,10 @@ contract RegulatoryEntity {
         taxEntityContract = TaxEntity(taxEntityAddress);
     }
 
-    function setBiddingEntity(address biddingEntityAddress) public onlyBy(owner) {
+    function setBiddingEntity(address biddingEntityAddress)
+        public
+        onlyBy(owner)
+    {
         biddingEntityContract = BiddingEntity(biddingEntityAddress);
     }
 
@@ -48,7 +52,10 @@ contract RegulatoryEntity {
     }
 
     modifier isBiddingEntity() {
-        require(msg.sender == address(biddingEntityContract), "Esta accion no puede ser realizada por esta direccion");
+        require(
+            msg.sender == address(biddingEntityContract),
+            "Esta accion no puede ser realizada por esta direccion"
+        );
         _;
     }
 
@@ -61,6 +68,21 @@ contract RegulatoryEntity {
     }
 
     function approveRegisteredCitizen(address citizen) public isAuthorized {
-        civilRegistryContract.approveCitizen(citizen);
+        civilRegistryContract.approveCitizen(citizen); 
+        taxEntityContract.addApprovedCitizen(citizen);
+    }
+
+    function fundConstruction(uint256 amount, address construction) public isBiddingEntity {
+        taxEntityContract.fundConstruction(amount, construction);
+    }
+
+    function getConstructionProviders(address constructionAddress) public view returns (address[] memory)  {
+        Construction construction = biddingEntityContract.getConstruction(constructionAddress);
+        return construction.getDesignatedProviders();
+    }
+
+    function approveProviderPayment(address constructionAddress, address provider) public isBiddingEntity {
+        Construction construction = biddingEntityContract.getConstruction(constructionAddress);
+        construction.approveProviderPayment(provider);
     }
 }
