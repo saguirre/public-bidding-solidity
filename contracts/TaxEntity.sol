@@ -25,6 +25,7 @@ contract TaxEntity {
     address private ownerContract;
     Queue constructionQueue;
     address[] approvedCitizens;
+    uint256 previousMonth = block.timestamp;
 
     constructor() {
         owner = msg.sender;
@@ -62,6 +63,48 @@ contract TaxEntity {
         returns (Tax[] memory)
     {
         return taxList;
+    }
+
+    function chargeInterest() public isOwner isNextMonth {
+        for (uint256 i = 0; i < approvedCitizens.length; i++) {
+            for (uint256 j = 0; j < taxList.length; j++) {
+                if (
+                    citizenDebt[approvedCitizens[i]][address(taxList[j])] != 0
+                ) {
+                    uint256 interest = (taxList[j].amount() *
+                        taxList[j].monthlyInterest()) / 100;
+                    citizenDebt[approvedCitizens[i]][
+                        address(taxList[j])
+                    ] += interest;
+                }
+            }
+        }
+    }
+
+    function chargeExpiredTaxes() public isOwner {
+        for (uint256 i = 0; i < taxList.length; i++) {
+            if (taxExpired(taxList[i])) {
+                for (uint256 j = 0; j < approvedCitizens.length; j++) {
+                    citizenDebt[approvedCitizens[j]][
+                        address(taxList[i])
+                    ] += taxList[i].amount();
+                }
+                taxList[i].advanceMonthlyExpiration();
+            }
+        }
+    }
+
+    function taxExpired(Tax tax) private view returns(bool) {
+        return tax.monthlyExpiration() < block.timestamp;
+    }
+
+    modifier isNextMonth() {
+        require(
+            ((block.timestamp - previousMonth) / 60 / 60 / 24) >= 30,
+            "Solo se puede cobrar interes una vez pasado al siguiente mes"
+        );
+        _;
+        previousMonth = block.timestamp;
     }
 
     function getCitizenDebtForTax(address citizenAddress, address taxAddress)
@@ -104,15 +147,14 @@ contract TaxEntity {
     // Agrego a la deuda de ese ciudadano cada cantidad de cada tax que existen.
     function addApprovedCitizen(address citizen) public isOwnerContract {
         approvedCitizens.push(citizen);
-        for(uint i = 0; i < taxList.length; i++) {
+        for (uint256 i = 0; i < taxList.length; i++) {
             citizenDebt[citizen][address(taxList[i])] = taxList[i].amount();
         }
     }
 
     function addTaxToApprovedCitizens(Tax tax) private {
         for (uint256 i = 0; i < approvedCitizens.length; i++) {
-            citizenDebt[approvedCitizens[i]][address(tax)] = tax
-            .amount();
+            citizenDebt[approvedCitizens[i]][address(tax)] = tax.amount();
         }
     }
 
@@ -135,7 +177,7 @@ contract TaxEntity {
 
         _;
         handleConstructionQueueFunding();
-        if (msg.value > taxes[address(tax)].amount())
+        if (msg.value > citizenDebt[msg.sender][address(tax)])
             payable(msg.sender).transfer(
                 msg.value - citizenDebt[msg.sender][address(tax)]
             );

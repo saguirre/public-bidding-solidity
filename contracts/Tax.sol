@@ -35,4 +35,8 @@ contract Tax {
         _;
     }
 
+    function advanceMonthlyExpiration() public isOwner {
+        monthlyExpiration += 30 days;
+    }
+
 }
