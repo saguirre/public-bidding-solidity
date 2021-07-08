@@ -3,19 +3,17 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "./CivilRegistry.sol";
 import "./TaxEntity.sol";
-import "./BiddingEntity.sol";
-import "./Construction.sol";
 
 contract RegulatoryEntity {
     address private owner;
     TaxEntity private taxEntityContract;
     CivilRegistry private civilRegistryContract;
-    BiddingEntity private biddingEntityContract;
+    // address private biddingEntityContract;
     mapping(address => bool) private authorizedUsers;
     uint256 public voteBudgetValue = 1 ether;
     uint256 public creationTime = block.timestamp;
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
     }
 
@@ -30,12 +28,12 @@ contract RegulatoryEntity {
         taxEntityContract = TaxEntity(taxEntityAddress);
     }
 
-    function setBiddingEntity(address biddingEntityAddress)
-        public
-        onlyBy(owner)
-    {
-        biddingEntityContract = BiddingEntity(biddingEntityAddress);
-    }
+    // function setBiddingEntity(address biddingEntityAddress)
+    //     public
+    //     onlyBy(owner)
+    // {
+    //     biddingEntityContract = biddingEntityAddress;
+    // }
 
     modifier onlyBy(address _account) {
         require(msg.sender == _account, "Unauthorized");
@@ -51,15 +49,15 @@ contract RegulatoryEntity {
         _;
     }
 
-    modifier isBiddingEntity() {
-        require(
-            msg.sender == address(biddingEntityContract),
-            "Esta accion no puede ser realizada por esta direccion"
-        );
-        _;
-    }
+    // modifier isBiddingEntity() {
+    //     require(
+    //         msg.sender == biddingEntityContract,
+    //         "Esta accion no puede ser realizada por esta direccion"
+    //     );
+    //     _;
+    // }
 
-    function approveCitizenVote(address citizen) public isBiddingEntity {
+    function approveCitizenVote(address citizen) public {
         civilRegistryContract.approveCitizenVote(citizen);
     }
 
@@ -68,21 +66,13 @@ contract RegulatoryEntity {
     }
 
     function approveRegisteredCitizen(address citizen) public isAuthorized {
-        civilRegistryContract.approveCitizen(citizen); 
+        civilRegistryContract.approveCitizen(citizen);
         taxEntityContract.addApprovedCitizen(citizen);
     }
 
-    function fundConstruction(uint256 amount, address construction) public isBiddingEntity {
+    function fundConstruction(uint256 amount, address construction)
+        public
+    {
         taxEntityContract.fundConstruction(amount, construction);
-    }
-
-    function getConstructionProviders(address constructionAddress) public view returns (address[] memory)  {
-        Construction construction = biddingEntityContract.getConstruction(constructionAddress);
-        return construction.getDesignatedProviders();
-    }
-
-    function approveProviderPayment(address constructionAddress, address provider) public isBiddingEntity {
-        Construction construction = biddingEntityContract.getConstruction(constructionAddress);
-        construction.approveProviderPayment(provider);
     }
 }

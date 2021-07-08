@@ -6,7 +6,7 @@ const configPath = path.resolve(process.cwd(), 'config.json');
 const projectFolder = process.cwd();
 const contractFolderName = 'contracts';
 const buildFolderName = 'build';
-const contractFileName = 'TaxEntity.sol';
+const contractFileName = 'Construction.sol';
 const contractName = contractFileName.replace('.sol', '');
 const contractPath = path.resolve(projectFolder, contractFolderName, contractFileName);
 
@@ -42,21 +42,21 @@ const methods = {
     async deploy() {
         const bytecode = JSON.parse(fs.readFileSync(bytecodePath, 'utf8')).bytecode;
         const abi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
-        
+
         const accounts = await web3.eth.getAccounts();
-        
+
         try {
             const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
             const result = await new web3.eth.Contract(abi).deploy({
                 data: '0x' + bytecode.object,
-                arguments: [config.regulatoryEntityAddress]
+                arguments: [config.regulatoryEntityAddress, config.taxEntityAddress]
             })
                 .send({
                     gas: '3000000',
                     from: accounts[1]
                 });
 
-            config.taxEntityAddress = result.options.address;
+            config.constructionFactoryAddress = result.options.address;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
         } catch (error) {
@@ -67,7 +67,7 @@ const methods = {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
         const abi = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
-        return new web3.eth.Contract(abi, config.taxEntityAddress);
+        return new web3.eth.Contract(abi, config.constructionFactoryAddress);
     }
 }
 
@@ -75,10 +75,10 @@ module.exports = { ...methods }
 
 function getImports(dependency) {
     switch (dependency) {
-        case 'Citizen.sol':
-            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Citizen.sol'), 'utf-8') }
-        case 'Tax.sol':
-            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Tax.sol'), 'utf-8') }
+        case 'Proposal.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Proposal.sol'), 'utf-8') }
+        case 'Construction.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Construction.sol'), 'utf-8') }
         default:
             return { error: 'Error in the import' }
     }

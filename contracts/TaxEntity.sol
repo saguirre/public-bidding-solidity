@@ -27,9 +27,9 @@ contract TaxEntity {
     address[] approvedCitizens;
     uint256 previousMonth = block.timestamp;
 
-    constructor() {
+    constructor(address regulatoryEntityAddress) {
         owner = msg.sender;
-        ownerContract = msg.sender;
+        ownerContract = regulatoryEntityAddress;
     }
 
     modifier isOwner() {

@@ -7,7 +7,7 @@ import "./RegulatoryEntity.sol";
 import "./CivilRegistry.sol";
 import "./Construction.sol";
 import "./Proposal.sol";
-import "./constructionFactory.sol";
+import "./ConstructionFactory.sol";
 
 contract BiddingEntity {
     enum Period {
@@ -105,7 +105,10 @@ contract BiddingEntity {
         }
 
         if (period == Period.ProposalVoting) {
-            require(civilRegistry.getVotingPercentage() >= 80, "No ha votado suficiente gente");
+            require(
+                civilRegistry.getVotingPercentage() >= 80,
+                "No ha votado suficiente gente"
+            );
             require(
                 block.timestamp >= votingPeriodStart + 15 days,
                 "No han pasado los dias suficientes"
@@ -141,7 +144,10 @@ contract BiddingEntity {
         proposalList = approvedProposals;
     }
 
-    function assignBudgetToProposal(address proposalAddress, uint256 budget) public isOwner {
+    function assignBudgetToProposal(address proposalAddress, uint256 budget)
+        public
+        isOwner
+    {
         Proposal proposal = proposals[proposalAddress];
         proposal.setBudget(budget);
         for (uint256 i = 0; i < proposalList.length; i++) {
@@ -151,13 +157,26 @@ contract BiddingEntity {
         }
     }
 
-    function getConstruction(address constructionAddress)
+    function approveProviderPayment(
+        address constructionAddress,
+        address provider
+    ) public isOwner {
+        Construction construction = constructionFactory.getConstruction(
+            constructionAddress
+        );
+        construction.approveProviderPayment(provider);
+    }
+
+    function getConstructionProviders(address constructionAddress)
         public
         view
         isOwner
-        returns (Construction construction)
+        returns (address[] memory)
     {
-        return constructionFactory.getConstruction(constructionAddress);
+        Construction construction = constructionFactory.getConstruction(
+            constructionAddress
+        );
+        return construction.getDesignatedProviders();
     }
 
     function receiveProposal(

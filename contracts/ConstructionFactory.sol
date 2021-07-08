@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
-import "./RegulatoryEntity.sol";
 import "./Proposal.sol";
+import "./Construction.sol";
 
 contract ConstructionFactory {
     
     mapping(address => Construction) constructions;
-    RegulatoryEntity regulatoryEntity;
+    address regulatoryEntity;
+    address taxEntity;
 
-    constructor(address regulatoryEntityAddress) {
-        regulatoryEntity = RegulatoryEntity(regulatoryEntityAddress);
+    constructor(address regulatoryEntityAddress, address taxEntityAddress) {
+        regulatoryEntity = regulatoryEntityAddress;
+        taxEntity = taxEntityAddress;
     }
 
     function createConstruction(Proposal proposal) public returns (address constructionAddress) {
@@ -19,7 +21,8 @@ contract ConstructionFactory {
             proposal.lineOfWork(),
             proposal.description(),
             proposal.budget(),
-            address(regulatoryEntity),
+            regulatoryEntity,
+            taxEntity,
             proposal.owner()
         );
         constructions[address(construction)] = construction;

@@ -47,6 +47,7 @@ const methods = {
         const accounts = await web3.eth.getAccounts();
 
         try {
+            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
             const result = await new web3.eth.Contract(abi).deploy({
                 data: '0x' + bytecode.object
             })
@@ -55,8 +56,6 @@ const methods = {
                     from: accounts[1]
                 });
 
-            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-            console.log(result.options.address);
             config.regulatoryEntityAddress = result.options.address;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 

@@ -28,7 +28,8 @@ const methods = {
             }
         }
 
-        const compiledContract = JSON.parse(solc.compile(JSON.stringify(compilerInputs)));
+        const compiledContract = JSON.parse(solc.compile(JSON.stringify(compilerInputs),
+            { import: getImports }));
 
         const contract = compiledContract.contracts[contractName][contractName];
 
@@ -45,15 +46,16 @@ const methods = {
         const accounts = await web3.eth.getAccounts();
 
         try {
+            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
             const result = await new web3.eth.Contract(abi).deploy({
-                data: '0x' + bytecode.object
+                data: '0x' + bytecode.object,
+                arguments: [config.regulatoryEntityAddress]
             })
                 .send({
                     gas: '3000000',
                     from: accounts[1]
                 });
 
-            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
             config.civilRegistryAddress = result.options.address;
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -70,3 +72,12 @@ const methods = {
 }
 
 module.exports = { ...methods }
+
+function getImports(dependency) {
+    switch (dependency) {
+        case 'Citizen.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Citizen.sol'), 'utf-8') }
+        default:
+            return { error: 'Error in the import' }
+    }
+}

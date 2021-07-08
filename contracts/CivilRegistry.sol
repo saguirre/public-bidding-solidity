@@ -10,9 +10,9 @@ contract CivilRegistry {
     address private owner;
     address private ownerContract;
 
-    constructor() {
+    constructor(address regulatoryEntityAddress) {
         owner = msg.sender;
-        ownerContract = msg.sender;
+        ownerContract = regulatoryEntityAddress;
     }
 
     function registerCitizen(
@@ -62,13 +62,13 @@ contract CivilRegistry {
         return registeredCitizens[citizen].voted();
     }
 
-    function getVotingPercentage() public view returns (uint) {
+    function getVotingPercentage() public view returns (uint256) {
         return (approvedCitizens.length * getCitizenAmountThatHasVoted()) / 100;
     }
 
-    function getCitizenAmountThatHasVoted() public view returns (uint) {
+    function getCitizenAmountThatHasVoted() public view returns (uint256) {
         uint256 votedAmount = 0;
-        for (uint i = 0; i < approvedCitizens.length; i++) {
+        for (uint256 i = 0; i < approvedCitizens.length; i++) {
             if (approvedCitizens[i].voted()) {
                 votedAmount += 1;
             }
@@ -77,7 +77,15 @@ contract CivilRegistry {
         return votedAmount;
     }
 
-    function approveCitizenVote(address citizen) public isOwner {
+    modifier isOwnerContract() {
+        require(
+            msg.sender == ownerContract,
+            "Esta accion solo puede ser realizada por el Estado"
+        );
+        _;
+    }
+
+    function approveCitizenVote(address citizen) public isOwnerContract {
         require(
             registeredCitizens[citizen].approved(),
             "El ciudadano no esta aprobado para votar"
@@ -85,7 +93,7 @@ contract CivilRegistry {
         registeredCitizens[citizen].setVoted(true);
     }
 
-    function approveCitizen(address citizen) public isOwner {
+    function approveCitizen(address citizen) public isOwnerContract {
         registeredCitizens[citizen].setApproval(true);
         approvedCitizens.push(registeredCitizens[citizen]);
     }
