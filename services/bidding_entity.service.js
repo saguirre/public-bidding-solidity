@@ -58,7 +58,7 @@ const methods = {
             })
                 .send({
                     gas: '3000000',
-                    from: accounts[1]
+                    from: process.env.ROPSTEN_ACCOUNT
                 });
 
             config.biddingEntityAddress = result.options.address;
@@ -92,6 +92,10 @@ function getImports(dependency) {
             return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'ConstructionFactory.sol'), 'utf-8') }
         case 'Proposal.sol':
             return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Proposal.sol'), 'utf-8') }
+        case 'Citizen.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Citizen.sol'), 'utf-8') }
+        case 'Tax.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Tax.sol'), 'utf-8') }
         default:
             return { error: 'Error in the import' }
     }

@@ -1,0 +1,56 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "regulatoryEntityAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "taxEntityAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract Proposal",
+        "name": "proposal",
+        "type": "address"
+      }
+    ],
+    "name": "createConstruction",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "constructionAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "constructionAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getConstruction",
+    "outputs": [
+      {
+        "internalType": "contract Construction",
+        "name": "construction",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

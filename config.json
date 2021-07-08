@@ -1,5 +1,7 @@
 {
-  "regulatoryEntityAddress": "0x27939eB7527B2ab34ED07B68454A29CC7c8E1fd3",
-  "civilRegistryAddress": "0x751d1e82787BdF7b146E832ecf880A4d9FFb482D",
-  "taxEntityAddress": "0x295378B52511a094bd7987d70964B550906a0d10"
+  "regulatoryEntityAddress": "0x2AB5cef4A4D333410380A207AC85f38962F29833",
+  "civilRegistryAddress": "0x4f7Fc1Dba04a9E35bF72Ce2216B2Af851F52A734",
+  "taxEntityAddress": "0xA2475b9b59F55b54426a530562E4215F4e675C80",
+  "constructionFactoryAddress": "0x6C339c37424BdBE35B89F3C0C7b64b74134e69c2",
+  "biddingEntityAddress": "0xB33A7241013363a297F3e9653015068B98ba64cA"
 }

@@ -6,7 +6,7 @@ const configPath = path.resolve(process.cwd(), 'config.json');
 const projectFolder = process.cwd();
 const contractFolderName = 'contracts';
 const buildFolderName = 'build';
-const contractFileName = 'Construction.sol';
+const contractFileName = 'ConstructionFactory.sol';
 const contractName = contractFileName.replace('.sol', '');
 const contractPath = path.resolve(projectFolder, contractFolderName, contractFileName);
 
@@ -53,7 +53,7 @@ const methods = {
             })
                 .send({
                     gas: '3000000',
-                    from: accounts[1]
+                    from: process.env.ROPSTEN_ACCOUNT
                 });
 
             config.constructionFactoryAddress = result.options.address;
@@ -75,6 +75,16 @@ module.exports = { ...methods }
 
 function getImports(dependency) {
     switch (dependency) {
+        case 'RegulatoryEntity.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'RegulatoryEntity.sol'), 'utf-8') }
+        case 'TaxEntity.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'TaxEntity.sol'), 'utf-8') }
+        case 'CivilRegistry.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'CivilRegistry.sol'), 'utf-8') }
+        case 'Citizen.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Citizen.sol'), 'utf-8') }
+        case 'Tax.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Tax.sol'), 'utf-8') }
         case 'Proposal.sol':
             return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Proposal.sol'), 'utf-8') }
         case 'Construction.sol':

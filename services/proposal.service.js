@@ -50,7 +50,7 @@ const methods = {
             })
                 .send({
                     gas: '3000000',
-                    from: accounts[1]
+                    from: process.env.ROPSTEN_ACCOUNT
                 });
 
             const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));

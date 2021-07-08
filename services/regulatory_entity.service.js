@@ -53,7 +53,7 @@ const methods = {
             })
                 .send({
                     gas: '3000000',
-                    from: accounts[1]
+                    from: process.env.ROPSTEN_ACCOUNT
                 });
 
             config.regulatoryEntityAddress = result.options.address;
@@ -79,6 +79,10 @@ function getImports(dependency) {
             return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'CivilRegistry.sol'), 'utf-8') }
         case 'TaxEntity.sol':
             return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'TaxEntity.sol'), 'utf-8') }
+        case 'Citizen.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Citizen.sol'), 'utf-8') }
+        case 'Tax.sol':
+            return { contents: fs.readFileSync(path.resolve(projectFolder, contractFolderName, 'Tax.sol'), 'utf-8') }
         default:
             return { error: 'Error in the import' }
     }

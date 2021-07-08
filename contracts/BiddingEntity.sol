@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.7.0 <0.9.0;
 
@@ -24,6 +24,7 @@ contract BiddingEntity {
     uint256 private votePercentage;
 
     uint256 public votingPeriodStart;
+    uint256 public votingPeriodLength = 15 days;
 
     TaxEntity taxEntity;
     RegulatoryEntity regulatoryEntity;
@@ -89,6 +90,13 @@ contract BiddingEntity {
         _;
     }
 
+    function changeVotingPeriodLength(uint256 _votingPeriodLength)
+        public
+        isOwner
+    {
+        votingPeriodLength = _votingPeriodLength;
+    }
+
     function nextPeriod() public isOwner {
         if (period == Period.AcceptingProposals) {
             require(
@@ -110,7 +118,7 @@ contract BiddingEntity {
                 "No ha votado suficiente gente"
             );
             require(
-                block.timestamp >= votingPeriodStart + 15 days,
+                block.timestamp >= votingPeriodStart + votingPeriodLength,
                 "No han pasado los dias suficientes"
             );
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
 import "./Tax.sol";
@@ -26,6 +26,7 @@ contract TaxEntity {
     Queue constructionQueue;
     address[] approvedCitizens;
     uint256 previousMonth = block.timestamp;
+    uint256 monthLength = 30;
 
     constructor(address regulatoryEntityAddress) {
         owner = msg.sender;
@@ -98,9 +99,13 @@ contract TaxEntity {
         return tax.monthlyExpiration() < block.timestamp;
     }
 
+    function changeMonthLength(uint _monthLength) public isOwner {
+        monthLength = _monthLength;
+    }
+
     modifier isNextMonth() {
         require(
-            ((block.timestamp - previousMonth) / 60 / 60 / 24) >= 30,
+            ((block.timestamp - previousMonth) / 60 / 60 / 24) >= monthLength,
             "Solo se puede cobrar interes una vez pasado al siguiente mes"
         );
         _;

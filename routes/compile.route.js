@@ -17,25 +17,6 @@ router.get('/', (req, res) => {
         citizenService.compile();
         proposalService.compile();
         civilRegistryService.compile();
-        // taxEntityService.compile();
-        // regulatoryEntityService.compile();
-        // constructionService.compile();
-        // constructionFactoryService.compile();
-        // biddingEntityService.compile();
-        res.status(200).send('All contracts compiled');
-    }
-    catch (error) {
-        console.log(error);
-        res.status(500).send(new Error('Cannot compile contract.'));
-    }
-});
-
-router.get('/1', (req, res) => {
-    try {
-        // taxService.compile();
-        // citizenService.compile();
-        // proposalService.compile();
-        // civilRegistryService.compile();
         taxEntityService.compile();
         regulatoryEntityService.compile();
         constructionService.compile();
@@ -49,17 +30,13 @@ router.get('/1', (req, res) => {
     }
 });
 
-router.get('/deploy', (req, res) => {
+router.get('/deploy', async (req, res) => {
     try {
-        taxService.deploy();
-        citizenService.deploy();
-        proposalService.deploy();
-        regulatoryEntityService.deploy();
-        civilRegistryService.deploy();
-        taxEntityService.deploy();
-        constructionService.deploy();
-        constructionFactoryService.deploy();
-        biddingEntityService.deploy();
+        await regulatoryEntityService.deploy();
+        await civilRegistryService.deploy();
+        await taxEntityService.deploy();
+        await constructionFactoryService.deploy();
+        await biddingEntityService.deploy();
         res.status(200).send('All contracts deployed');
     }
     catch (error) {

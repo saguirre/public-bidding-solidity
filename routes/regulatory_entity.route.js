@@ -27,7 +27,7 @@ router.get('/deploy', function (req, res) {
 router.put('/set-civil-registry/:address', async (req, res) => {
     try {
         const contract = regulatoryEntityService.getContract();
-        await contract.methods.setCivilRegistry(req.params.address).call({ from: '0x5FBDe0e4Fd96f036b217cAB59CEDC152e05fFc83' });
+        await contract.methods.setCivilRegistry(req.params.address).call({ from: process.env.ROPSTEN_ACCOUNT });
         res.status(200).send('Civil registry set');
     } catch (error) {
         console.log(error);
@@ -38,7 +38,7 @@ router.put('/set-civil-registry/:address', async (req, res) => {
 router.put('/citizen/approve/:address', async (req, res) => {
     try {
         const contract = regulatoryEntityService.getContract();
-        await contract.methods.approveRegisteredCitizen(req.params.address).call();
+        await contract.methods.approveRegisteredCitizen(req.params.address).call({ from: process.env.ROPSTEN_ACCOUNT});
         res.status(200).send(`Citizen ${req.params.address} approved`);
     } catch (error) {
         console.log(error);

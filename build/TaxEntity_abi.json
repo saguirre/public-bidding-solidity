@@ -59,6 +59,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_monthLength",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeMonthLength",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
