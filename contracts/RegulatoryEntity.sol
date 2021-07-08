@@ -8,7 +8,6 @@ contract RegulatoryEntity {
     address private owner;
     TaxEntity private taxEntityContract;
     CivilRegistry private civilRegistryContract;
-    // address private biddingEntityContract;
     mapping(address => bool) private authorizedUsers;
     uint256 public voteBudgetValue = 1 ether;
     uint256 public creationTime = block.timestamp;
@@ -28,13 +27,6 @@ contract RegulatoryEntity {
         taxEntityContract = TaxEntity(taxEntityAddress);
     }
 
-    // function setBiddingEntity(address biddingEntityAddress)
-    //     public
-    //     onlyBy(owner)
-    // {
-    //     biddingEntityContract = biddingEntityAddress;
-    // }
-
     modifier onlyBy(address _account) {
         require(msg.sender == _account, "Unauthorized");
         _;
@@ -48,14 +40,6 @@ contract RegulatoryEntity {
         require(authorizedUsers[msg.sender], "Unauthorized");
         _;
     }
-
-    // modifier isBiddingEntity() {
-    //     require(
-    //         msg.sender == biddingEntityContract,
-    //         "Esta accion no puede ser realizada por esta direccion"
-    //     );
-    //     _;
-    // }
 
     function approveCitizenVote(address citizen) public {
         civilRegistryContract.approveCitizenVote(citizen);

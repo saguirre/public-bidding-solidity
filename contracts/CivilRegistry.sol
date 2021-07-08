@@ -21,7 +21,8 @@ contract CivilRegistry {
         string memory lastName,
         uint256 birthDate
     ) public {
-        registeredCitizens[msg.sender] = new Citizen(
+        registeredCitizens[msg.sender] = new Citizen();
+        registeredCitizens[msg.sender].setValues(
             ci,
             name,
             lastName,

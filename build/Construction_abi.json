@@ -1,42 +1,6 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_name",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_lineOfWork",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_description",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_budgetCost",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "regulatoryEntityAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "taxEntityAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -246,6 +210,49 @@
       }
     ],
     "name": "selectProviders",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_lineOfWork",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_description",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_budgetCost",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "regulatoryEntityAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "taxEntityAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setValues",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

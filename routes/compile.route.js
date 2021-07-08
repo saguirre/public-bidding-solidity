@@ -32,10 +32,14 @@ router.get('/', (req, res) => {
 
 router.get('/deploy', async (req, res) => {
     try {
+        await taxService.deploy();
+        await citizenService.deploy();
+        await proposalService.deploy();
         await regulatoryEntityService.deploy();
         await civilRegistryService.deploy();
         await taxEntityService.deploy();
         await constructionFactoryService.deploy();
+        await constructionService.deploy();
         await biddingEntityService.deploy();
         res.status(200).send('All contracts deployed');
     }

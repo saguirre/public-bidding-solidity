@@ -5,7 +5,6 @@ import "./Proposal.sol";
 import "./Construction.sol";
 
 contract ConstructionFactory {
-    
     mapping(address => Construction) constructions;
     address regulatoryEntity;
     address taxEntity;
@@ -15,8 +14,12 @@ contract ConstructionFactory {
         taxEntity = taxEntityAddress;
     }
 
-    function createConstruction(Proposal proposal) public returns (address constructionAddress) {
-        Construction construction = new Construction(
+    function createConstruction(Proposal proposal)
+        public
+        returns (address constructionAddress)
+    {
+        Construction construction = new Construction();
+        construction.setValues(
             proposal.name(),
             proposal.lineOfWork(),
             proposal.description(),
@@ -29,7 +32,11 @@ contract ConstructionFactory {
         return address(construction);
     }
 
-    function getConstruction(address constructionAddress) public view returns (Construction construction) {
+    function getConstruction(address constructionAddress)
+        public
+        view
+        returns (Construction construction)
+    {
         return constructions[constructionAddress];
     }
 }

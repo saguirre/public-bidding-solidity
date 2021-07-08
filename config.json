@@ -1,7 +1,11 @@
 {
-  "regulatoryEntityAddress": "0x2AB5cef4A4D333410380A207AC85f38962F29833",
-  "civilRegistryAddress": "0x4f7Fc1Dba04a9E35bF72Ce2216B2Af851F52A734",
-  "taxEntityAddress": "0xA2475b9b59F55b54426a530562E4215F4e675C80",
-  "constructionFactoryAddress": "0x6C339c37424BdBE35B89F3C0C7b64b74134e69c2",
-  "biddingEntityAddress": "0xB33A7241013363a297F3e9653015068B98ba64cA"
+  "regulatoryEntityAddress": "0x6eD207818ca8be9a55F5D83Dfd894684A7b0F1C6",
+  "civilRegistryAddress": "0x8D11F643b2D85f78da608BCa538D4e9CfEa9283E",
+  "taxEntityAddress": "0x597FB78448C22F035A5b6e6E8B8eB825C2D684eb",
+  "constructionFactoryAddress": "0x93A948A39026fB1Fd5c504C66A7847BE31F43C1C",
+  "biddingEntityAddress": "0xeB9Bb4C8d7AB587bCb7644B661D8A254F19733BF",
+  "taxAddress": "0xAa9889c4Cd30753CB51361c51AbBE76e0dB2439b",
+  "citizenAddress": "0xCC927c13BeDb91AC572F88f3c3Bd30B2F9AeaD99",
+  "proposalAddress": "0x8427f2b4Fc9FcdaE22763db79898E74e8371cF83",
+  "constructionAddress": "0x393D9bd23500394C5be6FD8E144927cFd728711d"
 }

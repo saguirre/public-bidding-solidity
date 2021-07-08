@@ -10,13 +10,17 @@ contract Citizen {
     bool public approved;
     bool public voted;
 
-    constructor(
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function setValues(
         string memory _ci,
         string memory _name,
         string memory _lastName,
         uint256 _birthDate,
         address _owner
-    ) {
+    ) public isOwner {
         ci = _ci;
         name = _name;
         lastName = _lastName;
@@ -27,15 +31,18 @@ contract Citizen {
     }
 
     modifier isOwner() {
-        require(msg.sender == owner, "Esta funcion solo puede ser realizada por el dueno del contrato");
+        require(
+            msg.sender == owner,
+            "Esta funcion solo puede ser realizada por el dueno del contrato"
+        );
         _;
     }
 
     function setApproval(bool isApproved) public isOwner {
-        approved = isApproved; 
+        approved = isApproved;
     }
 
     function setVoted(bool hasVoted) public isOwner {
-        voted = hasVoted; 
+        voted = hasVoted;
     }
 }

@@ -14,12 +14,9 @@ contract TaxEntity {
     mapping(address => Tax) taxes;
     // List of taxes
     Tax[] taxList;
-    // Address citizen => Last Tax payed
     mapping(address => Tax) lastTaxPayed;
-    // Citizen address => Tax address => Citizen debt for tax
     mapping(address => mapping(address => uint256)) citizenDebt;
     mapping(address => Tax[]) citizenTaxes;
-    // Citizen address => Citizen total debt;
     mapping(address => uint256) totalCitizenDebt;
     address private owner;
     address private ownerContract;
@@ -95,11 +92,11 @@ contract TaxEntity {
         }
     }
 
-    function taxExpired(Tax tax) private view returns(bool) {
+    function taxExpired(Tax tax) private view returns (bool) {
         return tax.monthlyExpiration() < block.timestamp;
     }
 
-    function changeMonthLength(uint _monthLength) public isOwner {
+    function changeMonthLength(uint256 _monthLength) public isOwner {
         monthLength = _monthLength;
     }
 
@@ -135,7 +132,8 @@ contract TaxEntity {
         uint256 monthlyExpiration,
         uint256 monthlyInterest
     ) public isOwnerContract {
-        Tax tax = new Tax(
+        Tax tax = new Tax();
+        tax.setValues(
             name,
             lineOfWork,
             amount,

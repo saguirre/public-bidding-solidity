@@ -19,7 +19,12 @@ contract Construction {
     bool regulatoryEntityApprovedClose = false;
     bool paymentToProviderMade = false;
 
-    constructor(
+    constructor() {
+        owner = payable(msg.sender);
+        factoryAddress = msg.sender;
+    }
+
+    function setValues(
         string memory _name,
         string memory _lineOfWork,
         string memory _description,
@@ -27,7 +32,7 @@ contract Construction {
         address regulatoryEntityAddress,
         address taxEntityAddress,
         address _owner
-    ) {
+    ) public isOwner {
         name = _name;
         lineOfWork = _lineOfWork;
         description = _description;
@@ -147,7 +152,10 @@ contract Construction {
             "El proveedor no es ninguno de los proveedores designados por el dueno de la obra"
         );
 
-        require(address(this).balance >= initialBudget, "No existe Ether suficiente para pagar a los proveedores");
+        require(
+            address(this).balance >= initialBudget,
+            "No existe Ether suficiente para pagar a los proveedores"
+        );
         payable(provider).transfer(initialBudget);
         paymentToProviderMade = true;
         emit ProviderPayed(provider, initialBudget);

@@ -52,7 +52,7 @@ const methods = {
             })
                 .send({
                     gas: '3000000',
-                    from: process.env.ROPSTEN_ACCOUNT
+                    from: process.env.ACCOUNT
                 });
 
             config.constructionAddress = result.options.address;

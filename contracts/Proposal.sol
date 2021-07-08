@@ -10,12 +10,16 @@ contract Proposal {
     address public owner;
     address biddingContract;
 
-    constructor(
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function setValues(
         string memory _name,
         string memory _lineOfWork,
         string memory _description,
         address _owner
-    ) {
+    ) public isOwner {
         name = _name;
         lineOfWork = _lineOfWork;
         description = _description;
@@ -23,6 +27,14 @@ contract Proposal {
         voteCount = 0;
         budget = 0;
         biddingContract = msg.sender;
+    }
+
+    modifier isOwner() {
+        require(
+            msg.sender == owner,
+            "Esta funcion solo puede ser realizada por el dueno del contrato"
+        );
+        _;
     }
 
     modifier isBiddingEntity() {

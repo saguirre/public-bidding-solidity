@@ -10,14 +10,18 @@ contract Tax {
     bool public active;
     address owner;
 
-    constructor(
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function setValues(
         string memory _name,
         string memory _lineOfWork,
         uint256 _amount,
         uint256 _monthlyExpiration,
         uint256 _monthlyInterest,
         address _owner
-    ) {
+    ) public isOwner {
         name = _name;
         lineOfWork = _lineOfWork;
         amount = _amount;
@@ -38,5 +42,4 @@ contract Tax {
     function advanceMonthlyExpiration() public isOwner {
         monthlyExpiration += 30 days;
     }
-
 }

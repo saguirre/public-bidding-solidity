@@ -192,12 +192,8 @@ contract BiddingEntity {
         string memory lineOfWork,
         string memory description
     ) public userApproved hasNoDebt onlyAt(Period.AcceptingProposals) {
-        Proposal proposal = new Proposal(
-            name,
-            lineOfWork,
-            description,
-            address(this)
-        );
+        Proposal proposal = new Proposal();
+        proposal.setValues(name, lineOfWork, description, address(this));
         proposalList.push(proposal);
         proposals[address(proposal)] = proposal;
     }
